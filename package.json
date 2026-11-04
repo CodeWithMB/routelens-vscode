@@ -1,0 +1,38 @@
+{
+  "name": "routelens-vscode",
+  "displayName": "RouteLens",
+  "description": "Discover Express.js API routes, analyze middleware, and inspect authentication patterns directly inside VS Code.",
+  "version": "0.1.0",
+  "publisher": "codewithmb",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages"
+  ],
+  "main": "./out/extension.js",
+  "type": "module",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "routelens.helloWorld",
+        "title": "RouteLens: Hello World"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "check-types": "tsc --noEmit -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/vscode": "^1.144.0",
+    "typescript": "^7.0.2"
+  }
+}
