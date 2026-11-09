@@ -5,6 +5,11 @@ export interface WorkspaceScanResult {
     typescriptFiles: number;
     javascriptFiles: number;
     discoveredFiles: string[];
+
+    routeFiles: string[];
+    middlewareFiles: string[];
+    controllerFiles: string[];
+    serviceFiles: string[];
 }
 
 export async function scanWorkspace(): Promise<WorkspaceScanResult> {
@@ -14,6 +19,50 @@ export async function scanWorkspace(): Promise<WorkspaceScanResult> {
     );
 
     const discoveredFiles = files.map(file => file.fsPath);
+
+    const normalizedFiles = discoveredFiles.map(
+        file => file.replace(/\\/g, "/").toLowerCase()
+    );
+
+    const routeFiles = discoveredFiles.filter((file, index) => {
+        const normalizedPath = normalizedFiles[index];
+        const fileName = normalizedPath.split("/").pop() ?? "";
+
+        return (
+            normalizedPath.split("/").includes("routes") ||
+            /\.routes\.(ts|js)$/.test(fileName)
+        );
+    });
+
+    const middlewareFiles = discoveredFiles.filter((file, index) => {
+        const normalizedPath = normalizedFiles[index];
+        const fileName = normalizedPath.split("/").pop() ?? "";
+
+        return (
+            normalizedPath.split("/").includes("middleware") ||
+            /\.middleware\.(ts|js)$/.test(fileName)
+        );
+    });
+
+    const controllerFiles = discoveredFiles.filter((file, index) => {
+        const normalizedPath = normalizedFiles[index];
+        const fileName = normalizedPath.split("/").pop() ?? "";
+
+        return (
+            normalizedPath.split("/").includes("controllers") ||
+            /\.controller\.(ts|js)$/.test(fileName)
+        );
+    });
+
+    const serviceFiles = discoveredFiles.filter((file, index) => {
+        const normalizedPath = normalizedFiles[index];
+        const fileName = normalizedPath.split("/").pop() ?? "";
+
+        return (
+            normalizedPath.split("/").includes("services") ||
+            /\.service\.(ts|js)$/.test(fileName)
+        );
+    });
 
     const typescriptFiles = files.filter(
         file => file.fsPath.endsWith(".ts")
@@ -27,6 +76,11 @@ export async function scanWorkspace(): Promise<WorkspaceScanResult> {
         totalFiles: files.length,
         typescriptFiles,
         javascriptFiles,
-        discoveredFiles
+        discoveredFiles,
+
+        routeFiles,
+        middlewareFiles,
+        controllerFiles,
+        serviceFiles
     };
 }
