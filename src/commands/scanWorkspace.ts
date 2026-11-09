@@ -16,7 +16,7 @@ export async function handleScanWorkspace(): Promise<void> {
         const result = await scanWorkspace();
 
         vscode.window.showInformationMessage(
-            `RouteLens: Scan completed! Found ${result.totalFiles} files (${result.typescriptFiles} TypeScript, ${result.javascriptFiles} JavaScript).`
+            `RouteLens: ${result.totalFiles} files | Routes: ${result.routeFiles.length} | Middleware: ${result.middlewareFiles.length} | Controllers: ${result.controllerFiles.length} | Services: ${result.serviceFiles.length}`
         );
 
     } catch (error) {
