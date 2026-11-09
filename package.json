@@ -20,8 +20,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "routelens.helloWorld",
-        "title": "RouteLens: Hello World"
+        "command": "routelens.scanWorkspace",
+        "title": "RouteLens: Scan Workspace"
       }
     ]
   },
