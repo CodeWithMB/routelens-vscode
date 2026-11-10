@@ -107,3 +107,31 @@ export async function scanWorkspace(): Promise<WorkspaceScanResult> {
         serviceFiles
     };
 }
+
+export interface DiscoveredRoute {
+    file: string;
+    method: string;
+    path: string;
+}
+
+export async function extractEndpoints(
+    routeFiles: string[]
+): Promise<DiscoveredRoute[]> {
+    const discoveredRoutes: DiscoveredRoute[] = [];
+    const routePattern =
+        /\brouter\.(get|post|put|patch|delete)\s*\(\s*(['"])(.*?)\2/g;
+    for (const file of routeFiles) {
+        const uri = vscode.Uri.file(file);
+        const fileContent = await vscode.workspace.fs.readFile(uri);
+        const content = Buffer.from(fileContent).toString("utf-8");
+        const matches = content.matchAll(routePattern);
+        for (const match of matches) {
+            discoveredRoutes.push({
+                file: file,
+                method: match[1].toUpperCase(),
+                path: match[3]
+            });
+        }
+    }
+    return discoveredRoutes;
+}

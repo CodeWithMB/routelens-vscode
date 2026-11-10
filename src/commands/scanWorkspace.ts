@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { scanWorkspace, detectHttpMethods } from "../services/workspaceScanner.js";
+import { scanWorkspace, detectHttpMethods, extractEndpoints } from "../services/workspaceScanner.js";
 
 export async function handleScanWorkspace(): Promise<void> {
 
@@ -15,14 +15,14 @@ export async function handleScanWorkspace(): Promise<void> {
     try {
         const result = await scanWorkspace();
         const detectedRoutes = await detectHttpMethods(result.routeFiles);
-
+        const endpoints = await extractEndpoints(result.routeFiles);
         console.log("Detected HTTP methods:", detectedRoutes);
+        console.log("Discovered API endpoints:", endpoints);
         const totalDetectedMethods = Object.values(detectedRoutes)
             .flat()
             .length;
-
         vscode.window.showInformationMessage(
-            `RouteLens: ${result.totalFiles} files | Routes: ${result.routeFiles.length} | HTTP Methods: ${totalDetectedMethods} | Middleware: ${result.middlewareFiles.length} | Controllers: ${result.controllerFiles.length} | Services: ${result.serviceFiles.length}`
+            `RouteLens: ${result.totalFiles} files | Routes: ${result.routeFiles.length} | HTTP Methods: ${totalDetectedMethods} | Endpoints: ${endpoints.length} | Middleware: ${result.middlewareFiles.length} | Controllers: ${result.controllerFiles.length} | Services: ${result.serviceFiles.length}`
         );
 
     } catch (error) {
