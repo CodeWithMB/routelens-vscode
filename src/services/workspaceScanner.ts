@@ -12,6 +12,29 @@ export interface WorkspaceScanResult {
     serviceFiles: string[];
 }
 
+export async function detectHttpMethods(
+    routeFiles: string[]
+): Promise<Record<string, string[]>> {
+
+    const methods = ["get", "put", "post", "delete", "patch"];
+    const detectedRoutes: Record<string, string[]> = {};
+
+    for (const file of routeFiles) {
+
+        const uri = vscode.Uri.file(file);
+
+        const extractedFile = await vscode.workspace.fs.readFile(uri);
+
+        const content = Buffer.from(extractedFile).toString("utf-8");
+
+        const detectedMethods = methods.filter((method) => {
+            return content.includes(`router.${method}`);
+        });
+
+        detectedRoutes[file] = detectedMethods;
+    }
+    return detectedRoutes;
+}
 export async function scanWorkspace(): Promise<WorkspaceScanResult> {
     const files = await vscode.workspace.findFiles(
         "**/*.{ts,js}",
