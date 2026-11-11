@@ -17,23 +17,20 @@ export async function detectHttpMethods(
 ): Promise<Record<string, string[]>> {
 
     const methods = ["get", "put", "post", "delete", "patch"];
-    const detectedRoutes: Record<string, string[]> = {};
 
-    for (const file of routeFiles) {
+    const entries = await Promise.all(
+        routeFiles.map(async (file) => {
+            const uri = vscode.Uri.file(file);
+            const extractedFile = await vscode.workspace.fs.readFile(uri);
+            const content = Buffer.from(extractedFile).toString("utf-8");
 
-        const uri = vscode.Uri.file(file);
-
-        const extractedFile = await vscode.workspace.fs.readFile(uri);
-
-        const content = Buffer.from(extractedFile).toString("utf-8");
-
-        const detectedMethods = methods.filter((method) => {
-            return content.includes(`router.${method}`);
-        });
-
-        detectedRoutes[file] = detectedMethods;
-    }
-    return detectedRoutes;
+            const detectedMethods = methods.filter((method) => 
+                content.includes(`router.${method}`)
+            ) ;
+            return [file, detectedMethods] as const;
+        })
+    );
+    return Object.fromEntries(entries);
 }
 export async function scanWorkspace(): Promise<WorkspaceScanResult> {
     const files = await vscode.workspace.findFiles(
@@ -44,7 +41,7 @@ export async function scanWorkspace(): Promise<WorkspaceScanResult> {
     const discoveredFiles = files.map(file => file.fsPath);
 
     const normalizedFiles = discoveredFiles.map(
-        file => file.replace(/\\/g, "/").toLowerCase()
+        file => file.replaceAll("\\", "/").toLowerCase()
     );
 
     const routeFiles = discoveredFiles.filter((file, index) => {
@@ -117,21 +114,22 @@ export interface DiscoveredRoute {
 export async function extractEndpoints(
     routeFiles: string[]
 ): Promise<DiscoveredRoute[]> {
-    const discoveredRoutes: DiscoveredRoute[] = [];
+
     const routePattern =
         /\brouter\.(get|post|put|patch|delete)\s*\(\s*(['"])(.*?)\2/g;
-    for (const file of routeFiles) {
-        const uri = vscode.Uri.file(file);
-        const fileContent = await vscode.workspace.fs.readFile(uri);
-        const content = Buffer.from(fileContent).toString("utf-8");
-        const matches = content.matchAll(routePattern);
-        for (const match of matches) {
-            discoveredRoutes.push({
-                file: file,
+
+    const routesByFile = await Promise.all(
+        routeFiles.map(async (file) => {
+            const uri = vscode.Uri.file(file);
+            const fileContent = await vscode.workspace.fs.readFile(uri);
+            const content = Buffer.from(fileContent).toString("utf-8");
+
+            return [...content.matchAll(routePattern)].map((match) => ({
+                file,
                 method: match[1].toUpperCase(),
                 path: match[3]
-            });
-        }
-    }
-    return discoveredRoutes;
+            }));
+        })
+    );
+    return routesByFile.flat();
 }
