@@ -109,6 +109,7 @@ export interface DiscoveredRoute {
     file: string;
     method: string;
     path: string;
+    handler: string;
 }
 
 export async function extractEndpoints(
@@ -116,7 +117,7 @@ export async function extractEndpoints(
 ): Promise<DiscoveredRoute[]> {
 
     const routePattern =
-        /\brouter\.(get|post|put|patch|delete)\s*\(\s*(['"])(.*?)\2/g;
+        /\brouter\.(get|post|put|patch|delete)\s*\(\s*(['"])(.*?)\2\s*,\s*([A-Za-z_$][\w$]*)/g;
 
     const routesByFile = await Promise.all(
         routeFiles.map(async (file) => {
@@ -127,7 +128,8 @@ export async function extractEndpoints(
             return [...content.matchAll(routePattern)].map((match) => ({
                 file,
                 method: match[1].toUpperCase(),
-                path: match[3]
+                path: match[3],
+                handler: match[4]
             }));
         })
     );

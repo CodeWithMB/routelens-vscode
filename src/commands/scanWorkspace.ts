@@ -17,7 +17,10 @@ export async function handleScanWorkspace(): Promise<void> {
         const detectedRoutes = await detectHttpMethods(result.routeFiles);
         const endpoints = await extractEndpoints(result.routeFiles);
         console.log("Detected HTTP methods:", detectedRoutes);
-        console.log("Discovered API endpoints:", endpoints);
+        console.log(
+            "Discovered API endpoints:",
+            JSON.stringify(endpoints, null, 2)
+        );
         const totalDetectedMethods = Object.values(detectedRoutes)
             .flat()
             .length;
